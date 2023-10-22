@@ -1,6 +1,6 @@
 use super::FIXTURE_DIR;
 use crate::{
-    html5::tokenizer::{StartTag, Token, Tokenizer, TokenizerState},
+    html5::tokenizer::{StartTag, Token, TokenError, TokenResult, Tokenizer, TokenizerState},
     types::{AttributeMap, Result},
 };
 use serde::{
@@ -9,13 +9,6 @@ use serde::{
 };
 use serde_json::Value;
 use std::{fs, path::PathBuf};
-
-#[derive(Debug, Deserialize, PartialEq)]
-pub struct TokenError {
-    code: String,
-    line: usize,
-    col: usize,
-}
 
 struct OutputVisitor;
 
@@ -103,7 +96,9 @@ impl<'de> Deserialize<'de> for Token {
     }
 }
 
-pub struct TestResult;
+pub struct TestResult {
+    output: Vec<TokenResult>,
+}
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -120,15 +115,23 @@ pub struct JsonTest {
 }
 
 impl JsonTest {
-    pub fn pump_tokenizer(&self) -> Result<TestResult> {
+    pub fn pump_tokenizer(&self, initial_state: TokenizerState) -> Result<TestResult> {
         let last_start_tag = self.last_start_tag.as_ref().map(StartTag::from);
-        let tokenizer = Tokenizer::from_str(&self.input, last_start_tag);
+        let tokenizer = Tokenizer::from_str(&self.input, initial_state, last_start_tag);
+        let output = tokenizer.iter()?.collect::<Vec<_>>();
+        Ok(TestResult { output })
+    }
 
-        let tokens = tokenizer.into_iter().collect::<Vec<_>>();
+    pub fn assert_valid(&self) {
+        for state in self.initial_states() {
+            let TestResult { output } = self.pump_tokenizer(state).unwrap();
 
-        dbg!(&tokens);
-
-        Ok(TestResult)
+            for (expected, actual) in self.output.iter().zip(output) {
+                if let TokenResult::Ok { token: actual, .. } = actual {
+                    assert_eq!(expected, &actual);
+                }
+            }
+        }
     }
 
     pub fn initial_states(&self) -> Vec<TokenizerState> {
