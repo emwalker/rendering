@@ -9,11 +9,18 @@ name = "parse"
 path = "src/bin/parse.rs"
 
 [[test]]
+name = "tokenizer"
+path = "tests/tokenizer.rs"
+
+[[test]]
 name = "tree_construction"
 path = "tests/tree_construction.rs"
 
 [dependencies]
+itertools = "0.11.0"
 nom = "7.1.3"
+serde = { version = "1.0.189", features = ["derive"] }
+serde_json = "1.0.107"
 thiserror = "1.0.50"
 
 [dev-dependencies]

@@ -1,4 +1,5 @@
 // See https://github.com/html5lib/html5lib-tests/tree/master/tree-construction
+use super::FIXTURE_DIR;
 use crate::types::{Error, Result};
 use nom::{
     branch::alt,
@@ -10,8 +11,6 @@ use nom::{
     Finish, IResult,
 };
 use std::{fs, path::PathBuf};
-
-pub const FIXTURE_DIR: &str = "./tests/data/html5lib-tests";
 
 #[derive(Debug, PartialEq)]
 pub struct Position {
@@ -327,7 +326,7 @@ fn parse_str(i: &str) -> Result<Vec<Test>> {
     Ok(tests)
 }
 
-pub fn read_from_path(path: &PathBuf) -> Result<Tests> {
+pub fn fixture_from_path(path: &PathBuf) -> Result<Tests> {
     let s = fs::read_to_string(path)?;
     let tests: Vec<Test> = parse_str(&s)?;
 
@@ -337,11 +336,11 @@ pub fn read_from_path(path: &PathBuf) -> Result<Tests> {
     })
 }
 
-pub fn read_from_filename(filename: &str) -> Result<Tests> {
+pub fn fixture_from_filename(filename: &str) -> Result<Tests> {
     let path = PathBuf::from(FIXTURE_DIR)
         .join("tree-construction")
         .join(filename);
-    read_from_path(&path)
+    fixture_from_path(&path)
 }
 
 pub fn fixtures() -> Result<Vec<Tests>> {
@@ -356,7 +355,7 @@ pub fn fixtures() -> Result<Vec<Tests>> {
         }
 
         println!("loading test file {:?}", path);
-        let fixtures: Tests = read_from_path(&path)?;
+        let fixtures: Tests = fixture_from_path(&path)?;
         tests.push(fixtures);
     }
 
