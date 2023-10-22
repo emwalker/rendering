@@ -1,5 +1,8 @@
 use super::FIXTURE_DIR;
-use crate::types::{AttributeMap, Result};
+use crate::{
+    html5::tokenizer::{StartTag, Token, Tokenizer, TokenizerState},
+    types::{AttributeMap, Result},
+};
 use serde::{
     de::{Error, Unexpected, Visitor},
     Deserialize, Deserializer,
@@ -14,39 +17,17 @@ pub struct TokenError {
     col: usize,
 }
 
-#[derive(Debug, PartialEq)]
-pub enum Assertion {
-    Character(String),
-
-    Comment(String),
-
-    Doctype {
-        name: Option<String>,
-        something1: Option<String>,
-        something2: Option<String>,
-        something3: bool,
-    },
-
-    EndTag(String),
-
-    StartTag {
-        name: String,
-        attributes: AttributeMap,
-        something: bool,
-    },
-}
-
 struct OutputVisitor;
 
 impl<'de> Visitor<'de> for OutputVisitor {
-    type Value = Assertion;
+    type Value = Token;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         formatter.write_str("an Assertion variant")
     }
 }
 
-impl<'de> Deserialize<'de> for Assertion {
+impl<'de> Deserialize<'de> for Token {
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -71,11 +52,11 @@ impl<'de> Deserialize<'de> for Assertion {
 
         match values.len() {
             2 => match kind {
-                "Character" => Ok(Assertion::Character(values[1].as_str().unwrap().to_owned())),
+                "Character" => Ok(Token::Character(values[1].as_str().unwrap().to_owned())),
 
-                "Comment" => Ok(Assertion::Comment(values[1].as_str().unwrap().to_owned())),
+                "Comment" => Ok(Token::Comment(values[1].as_str().unwrap().to_owned())),
 
-                "EndTag" => Ok(Assertion::EndTag(values[1].as_str().unwrap().to_owned())),
+                "EndTag" => Ok(Token::EndTag(values[1].as_str().unwrap().to_owned())),
 
                 _ => Err(D::Error::invalid_value(
                     Unexpected::Str(kind),
@@ -84,31 +65,31 @@ impl<'de> Deserialize<'de> for Assertion {
             },
 
             3 => match kind {
-                "StartTag" => Ok(Assertion::StartTag {
+                "StartTag" => Ok(Token::StartTag(StartTag {
                     name: values[1].as_str().unwrap().to_owned(),
                     attributes: attributes(&values[2]),
-                    something: false,
-                }),
+                    self_closing: false,
+                })),
 
                 _ => Err(D::Error::invalid_value(Unexpected::Str(kind), &"StartTag")),
             },
 
             4 => match kind {
-                "StartTag" => Ok(Assertion::StartTag {
+                "StartTag" => Ok(Token::StartTag(StartTag {
                     name: values[1].as_str().unwrap().to_owned(),
                     attributes: attributes(&values[2]),
-                    something: values[1].as_bool().unwrap_or_default(),
-                }),
+                    self_closing: values[1].as_bool().unwrap_or_default(),
+                })),
 
                 _ => Err(D::Error::invalid_value(Unexpected::Str(kind), &"StartTag")),
             },
 
             5 => match kind {
-                "DOCTYPE" => Ok(Assertion::Doctype {
+                "DOCTYPE" => Ok(Token::Doctype {
                     name: values[1].as_str().map(str::to_owned),
-                    something1: values[2].as_str().map(str::to_owned),
-                    something2: values[3].as_str().map(str::to_owned),
-                    something3: values[4].as_bool().unwrap_or_default(),
+                    public_id: values[2].as_str().map(str::to_owned),
+                    system_id: values[3].as_str().map(str::to_owned),
+                    correctness: values[4].as_bool().unwrap_or_default(),
                 }),
 
                 _ => Err(D::Error::invalid_value(Unexpected::Str(kind), &"DOCTYPE")),
@@ -124,22 +105,6 @@ impl<'de> Deserialize<'de> for Assertion {
 
 pub struct TestResult;
 
-#[derive(Debug, Deserialize, PartialEq)]
-pub enum InitialState {
-    #[serde(rename = "CDATA section state")]
-    CData,
-    #[serde(rename = "Data state")]
-    Data,
-    #[serde(rename = "PLAINTEXT state")]
-    PlainText,
-    #[serde(rename = "RAWTEXT state")]
-    RawText,
-    #[serde(rename = "RCDATA state")]
-    RCData,
-    #[serde(rename = "Script data state")]
-    ScriptData,
-}
-
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct JsonTest {
@@ -147,15 +112,30 @@ pub struct JsonTest {
     #[serde(default = "Vec::new")]
     pub errors: Vec<TokenError>,
     #[serde(default = "Vec::new")]
-    pub initial_states: Vec<InitialState>,
+    initial_states: Vec<TokenizerState>,
     pub input: String,
     pub last_start_tag: Option<String>,
-    pub output: Vec<Assertion>,
+    pub output: Vec<Token>,
+    pub double_escaped: Option<bool>,
 }
 
 impl JsonTest {
-    pub fn tokenize(&self) -> Result<TestResult> {
+    pub fn pump_tokenizer(&self) -> Result<TestResult> {
+        let last_start_tag = self.last_start_tag.as_ref().map(StartTag::from);
+        let tokenizer = Tokenizer::from_str(&self.input, last_start_tag);
+
+        let tokens = tokenizer.into_iter().collect::<Vec<_>>();
+
+        dbg!(&tokens);
+
         Ok(TestResult)
+    }
+
+    pub fn initial_states(&self) -> Vec<TokenizerState> {
+        if self.initial_states.is_empty() {
+            return vec![TokenizerState::Data];
+        }
+        self.initial_states.clone()
     }
 }
 
@@ -245,11 +225,11 @@ mod tests {
         assert_eq!(test.input, "<h a=\"&noti;\">");
         assert_eq!(
             test.output,
-            &[Assertion::StartTag {
+            &[Token::StartTag(StartTag {
                 name: "h".into(),
                 attributes: HashMap::from([("a".into(), "&noti;".into())]),
-                something: false,
-            }],
+                self_closing: false,
+            })],
         );
     }
 
@@ -284,7 +264,7 @@ mod tests {
 
         assert_eq!(test.description, "space EOF after doctype ");
 
-        if let Assertion::Doctype { name, .. } = &test.output[0] {
+        if let Token::Doctype { name, .. } = &test.output[0] {
             assert_eq!(name, &Some("html".into()));
         } else {
             panic!();
@@ -339,6 +319,20 @@ mod tests {
         let test: JsonTest = serde_json::from_str(input).expect("failed to parse");
 
         let output = &test.output[0];
-        assert!(matches!(output, Assertion::Doctype { .. }));
+        assert!(matches!(output, Token::Doctype { .. }));
+    }
+
+    #[test]
+    fn double_escaped() {
+        let input = r#"{
+            "description":"NUL in CDATA section",
+            "doubleEscaped":true,
+            "initialStates":["CDATA section state"],
+            "input":"\\u0000]]>",
+            "output":[["Character", "\\u0000"]]
+        }"#;
+
+        let test: JsonTest = serde_json::from_str(input).expect("failed to parse");
+        assert_eq!(test.double_escaped, Some(true));
     }
 }

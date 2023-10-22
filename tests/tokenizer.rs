@@ -18,6 +18,6 @@ fn tokenization(filename: &str) {
 
     for test in tests.iter() {
         println!("running test: {}", test.description);
-        let _ = test.tokenize().unwrap();
+        let _ = test.pump_tokenizer().unwrap();
     }
 }

@@ -17,6 +17,7 @@ name = "tree_construction"
 path = "tests/tree_construction.rs"
 
 [dependencies]
+encoding_rs = "0.8.33"
 itertools = "0.11.0"
 nom = "7.1.3"
 serde = { version = "1.0.189", features = ["derive"] }
