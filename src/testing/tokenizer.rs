@@ -96,6 +96,28 @@ impl<'de> Deserialize<'de> for Token {
     }
 }
 
+// We only care about six states that are found in the tests rather than handling deserialization
+// of all possible states.
+fn deserialize_states<'de, D>(deserializer: D) -> std::result::Result<Vec<State>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let values: Vec<Value> = Deserialize::deserialize(deserializer)?;
+    let states = values
+        .into_iter()
+        .map(|value| match value.as_str() {
+            Some("Data state") => State::Data,
+            Some("CDATA section state") => State::CDATASection,
+            Some("PLAINTEXT state") => State::PLAINTEXT,
+            Some("RAWTEXT state") => State::RAWTEXT,
+            Some("RCDATA state") => State::RCDATA,
+            Some("Script data state") => State::ScriptData,
+            _ => unreachable!("{}", value),
+        })
+        .collect::<Vec<_>>();
+    Ok(states)
+}
+
 pub struct TestResult {
     output: Vec<TokenResult>,
 }
@@ -106,7 +128,7 @@ pub struct JsonTest {
     pub description: String,
     #[serde(default = "Vec::new")]
     pub errors: Vec<TokenError>,
-    #[serde(default = "Vec::new")]
+    #[serde(default = "Vec::new", deserialize_with = "deserialize_states")]
     initial_states: Vec<State>,
     pub input: String,
     pub last_start_tag: Option<String>,

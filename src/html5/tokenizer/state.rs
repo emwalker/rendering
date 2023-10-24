@@ -1,143 +1,109 @@
 use super::{builder::Builder, NextChar, StartTag, Token};
 use crate::types::AttributeMap;
-use serde::Deserialize;
 use NextChar::*;
 
-#[derive(Debug, Copy, Clone, Deserialize, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum State {
     /// 8.2.4.36 After attribute name state
-    #[serde(skip)]
     AfterAttributeName,
 
     /// 8.2.4.55 After DOCTYPE name state
-    #[serde(skip)]
     AfterDOCTYPEName,
 
     /// 8.2.4.42 After attribute value (quoted) state
-    #[serde(skip)]
     AfterAttributeValueQuoted,
 
     /// 8.2.4.35 Attribute name state
-    #[serde(skip)]
     AttributeName,
 
     /// 8.2.4.38 Attribute value (double-quoted) state
-    #[serde(skip)]
     AttributeValueDoubleQuoted,
 
     /// 8.2.4.39 Attribute value (single-quoted) state
-    #[serde(skip)]
     AttributeValueSingleQuoted,
 
     /// 8.2.4.40 Attribute value (unquoted) state
-    #[serde(skip)]
     AttributeValueUnquoted,
 
     /// 8.2.4.34 Before attribute name state
-    #[serde(skip)]
     BeforeAttributeName,
 
     /// 8.2.4.37 Before attribute value state
-    #[serde(skip)]
     BeforeAttributeValue,
 
     /// 8.2.4.53 Before DOCTYPE name state
-    #[serde(skip)]
     BeforeDOCTYPEName,
 
     /// 8.2.4.44 Bogus comment state
-    #[serde(skip)]
     BogusComment,
 
     /// 8.2.4.68 CDATA section state
-    #[serde(rename = "CDATA section state")]
     CDATASection,
 
     /// 8.2.4.46 Comment start state
-    #[serde(skip)]
     CommentStart,
 
     /// 8.2.4.1 Data state
-    #[serde(rename = "Data state")]
     Data,
 
     /// 8.2.4.52 DOCTYPE state
-    #[serde(skip)]
     DOCTYPE,
 
     /// 8.2.4.54 DOCTYPE name state
-    #[serde(skip)]
     DOCTYPEName,
 
     /// 8.2.4.9 End tag open state
-    #[serde(skip)]
     EndTagOpen,
 
-    #[serde(skip)]
+    /// Not part of the HTML5 tokenization spec.  Used for internal tracking of state.
     Eof,
 
     /// 8.2.4.45 Markup declaration open state
-    #[serde(skip)]
     MarkupDeclarationOpen,
 
     /// 8.2.4.7 PLAINTEXT state
-    #[serde(rename = "PLAINTEXT state")]
     PLAINTEXT,
 
     /// 8.2.4.5 RAWTEXT state
-    #[serde(rename = "RAWTEXT state")]
     RAWTEXT,
 
     /// 8.2.4.3 RCDATA state
-    #[serde(rename = "RCDATA state")]
     RCDATA,
 
     /// 8.2.4.6 Script data state
-    #[serde(rename = "Script data state")]
     ScriptData,
 
     /// 8.2.4.19 Script data end tag name state
-    #[serde(skip)]
     ScriptDataEndTagName,
 
     /// 8.2.4.18 Script data end tag open state
-    #[serde(skip)]
     ScriptDataEndTagOpen,
 
     /// 8.2.4.22 Script data escaped state
-    #[serde(skip)]
     ScriptDataEscaped,
 
     /// 8.2.4.20 Script data escape start state
-    #[serde(skip)]
     ScriptDataEscapeStart,
 
     /// 8.2.4.23 Script data escaped dash state
-    #[serde(skip)]
     ScriptDataEscapedDash,
 
     /// 8.2.4.24 Script data escaped dash dash state
-    #[serde(skip)]
     ScriptDataEscapeDashDash,
 
     /// 8.2.4.21 Script data escape start dash state
-    #[serde(skip)]
     ScriptDataEscapeStartDash,
 
     /// 8.2.4.17 Script data less-than sign state
-    #[serde(skip)]
     ScriptDataLessThanSign,
 
     /// 8.2.4.43 Self-closing start tag state
-    #[serde(skip)]
     SelfClosingStartTag,
 
     /// 8.2.4.10 Tag name state
-    #[serde(skip)]
     TagName,
 
     /// 8.2.4.8 Tag open state
-    #[serde(skip)]
     TagOpen,
 }
 
