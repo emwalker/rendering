@@ -1,6 +1,6 @@
 use super::FIXTURE_DIR;
 use crate::{
-    html5::tokenizer::{StartTag, Token, TokenError, TokenResult, Tokenizer, TokenizerState},
+    html5::tokenizer::{StartTag, State, Token, TokenError, TokenResult, Tokenizer},
     types::{AttributeMap, Result},
 };
 use serde::{
@@ -107,7 +107,7 @@ pub struct JsonTest {
     #[serde(default = "Vec::new")]
     pub errors: Vec<TokenError>,
     #[serde(default = "Vec::new")]
-    initial_states: Vec<TokenizerState>,
+    initial_states: Vec<State>,
     pub input: String,
     pub last_start_tag: Option<String>,
     pub output: Vec<Token>,
@@ -115,10 +115,10 @@ pub struct JsonTest {
 }
 
 impl JsonTest {
-    pub fn pump_tokenizer(&self, initial_state: TokenizerState) -> Result<TestResult> {
+    pub fn pump_tokenizer(&self, initial_state: State) -> Result<TestResult> {
         let last_start_tag = self.last_start_tag.as_ref().map(StartTag::from);
         let tokenizer = Tokenizer::from_str(&self.input, initial_state, last_start_tag);
-        let output = tokenizer.iter()?.collect::<Vec<_>>();
+        let output = tokenizer.iter().collect::<Vec<_>>();
         Ok(TestResult { output })
     }
 
@@ -134,9 +134,9 @@ impl JsonTest {
         }
     }
 
-    pub fn initial_states(&self) -> Vec<TokenizerState> {
+    pub fn initial_states(&self) -> Vec<State> {
         if self.initial_states.is_empty() {
-            return vec![TokenizerState::Data];
+            return vec![State::Data];
         }
         self.initial_states.clone()
     }

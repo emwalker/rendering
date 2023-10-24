@@ -654,7 +654,7 @@ eof in table
     fn template_dat_1613() {
         let (_, test) = test(
             r#"
-            #data
+#data
 <template><form><input name="q"></form><div>second</div></template>
 #errors
 #document-fragment
