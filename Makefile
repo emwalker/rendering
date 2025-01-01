@@ -1,7 +1,8 @@
 check:
-	cargo clippy -- -D warnings
-	cargo test
+	cargo clippy --all-features -- -D warnings
+	cargo test --features lol_html
+	cargo test --features tl
 
 fix:
 	cargo fmt
-	cargo clippy --fix --allow-dirty --allow-staged
+	cargo clippy --all-features --fix --allow-dirty --allow-staged

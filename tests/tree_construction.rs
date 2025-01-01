@@ -1,3 +1,4 @@
+use rendering::html5::{lol_html, tl};
 use rendering::testing::tree_construction::{fixture_from_filename, fixtures};
 use test_case::test_case;
 
@@ -12,7 +13,13 @@ fn test(filename: &str) {
 
     for test in tests.iter() {
         println!("running {}", test.data);
-        let _ = test.parse::<tl::VDom>().expect("failed to parse");
+
+        #[cfg(feature = "tl")]
+        let _ = test.parse::<tl::Dom>().expect("failed to parse");
+        // assert_eq!(result.expected(), result.actual());
+
+        #[cfg(feature = "lol_html")]
+        let _ = test.parse::<lol_html::Dom>().expect("failed to parse");
         // assert_eq!(result.expected(), result.actual());
     }
 }

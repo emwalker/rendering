@@ -1,6 +1,6 @@
 // See https://github.com/html5lib/html5lib-tests/tree/master/tree-construction
 use super::FIXTURE_DIR;
-use crate::html5::{Document, Dom};
+use crate::html5::Document;
 use crate::types::{Error, Result};
 use nom::lib::std::fmt::Debug;
 use nom::{
@@ -13,6 +13,12 @@ use nom::{
     Finish, IResult,
 };
 use std::{fs, path::PathBuf};
+
+#[cfg(feature = "lol_html")]
+use crate::html5::lol_html;
+
+#[cfg(feature = "tl")]
+use crate::html5::tl;
 
 #[derive(Debug, PartialEq)]
 pub struct Position {
@@ -60,20 +66,38 @@ pub struct Test {
 
 pub struct TreeConstructionResult<'i, T> {
     #[allow(dead_code)]
-    dom: Dom<T>,
+    dom: T,
     #[allow(dead_code)]
     test: &'i Test,
 }
 
 #[cfg(feature = "tl")]
-impl<'i> Dom<tl::VDom<'i>> {
+impl<'i> tl::Dom<'i> {
     fn serialize(&'i self) -> String {
         self.0.outer_html()
     }
 }
 
 #[cfg(feature = "tl")]
-impl<'i> TreeConstructionResult<'i, tl::VDom<'i>> {
+impl<'i> TreeConstructionResult<'i, tl::Dom<'i>> {
+    pub fn expected(&self) -> &str {
+        &self.test.document
+    }
+
+    pub fn actual(&'i self) -> String {
+        self.dom.serialize()
+    }
+}
+
+#[cfg(feature = "lol_html")]
+impl lol_html::Dom {
+    fn serialize(&self) -> String {
+        String::from_utf8(self.as_bytes().clone()).expect("failed to convert to UTF8")
+    }
+}
+
+#[cfg(feature = "lol_html")]
+impl<'i> TreeConstructionResult<'i, lol_html::Dom> {
     pub fn expected(&self) -> &str {
         &self.test.document
     }

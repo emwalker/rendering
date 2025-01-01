@@ -9,6 +9,10 @@ pub enum Error {
     #[error("json: {0}")]
     Json(#[from] serde_json::Error),
 
+    #[cfg(feature = "lol_html")]
+    #[error("lol_html rewriting error: {0}")]
+    LolHtmlRewritingError(#[from] lol_html::errors::RewritingError),
+
     #[error("tree construction: {0}")]
     TreeConstruction(String),
 
