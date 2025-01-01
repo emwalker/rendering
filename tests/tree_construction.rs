@@ -12,7 +12,7 @@ fn test(filename: &str) {
 
     for test in tests.iter() {
         println!("running {}", test.data);
-        // Make sure we don't panic
-        let _ = test.parse().expect("failed to parse");
+        let _ = test.parse::<tl::VDom>().expect("failed to parse");
+        // assert_eq!(result.expected(), result.actual());
     }
 }

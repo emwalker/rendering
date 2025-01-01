@@ -1,6 +1,8 @@
 // See https://github.com/html5lib/html5lib-tests/tree/master/tree-construction
 use super::FIXTURE_DIR;
+use crate::html5::{Document, Dom};
 use crate::types::{Error, Result};
+use nom::lib::std::fmt::Debug;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until, take_until1, take_while1},
@@ -56,14 +58,40 @@ pub struct Test {
     pub document: String,
 }
 
-pub enum TreeConstructionResult {
-    Success,
-    Error,
+pub struct TreeConstructionResult<'i, T> {
+    #[allow(dead_code)]
+    dom: Dom<T>,
+    #[allow(dead_code)]
+    test: &'i Test,
+}
+
+#[cfg(feature = "tl")]
+impl<'i> Dom<tl::VDom<'i>> {
+    fn serialize(&'i self) -> String {
+        self.0.outer_html()
+    }
+}
+
+#[cfg(feature = "tl")]
+impl<'i> TreeConstructionResult<'i, tl::VDom<'i>> {
+    pub fn expected(&self) -> &str {
+        &self.test.document
+    }
+
+    pub fn actual(&'i self) -> String {
+        self.dom.serialize()
+    }
 }
 
 impl Test {
-    pub fn parse(&self) -> Result<TreeConstructionResult> {
-        Ok(TreeConstructionResult::Success)
+    pub fn parse<'i, T>(&'i self) -> Result<TreeConstructionResult<'i, T>>
+    where
+        T: Document<'i, T> + Debug,
+    {
+        Ok(TreeConstructionResult {
+            dom: T::parse(&self.data)?,
+            test: self,
+        })
     }
 }
 

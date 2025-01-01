@@ -1,6 +1,6 @@
 check:
-	cargo test
 	cargo clippy -- -D warnings
+	cargo test
 
 fix:
 	cargo fmt
