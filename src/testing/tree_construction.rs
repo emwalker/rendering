@@ -16,7 +16,8 @@ use std::{fs, path::PathBuf};
 
 #[cfg(feature = "lol_html")]
 use crate::html5::lol_html;
-
+#[cfg(feature = "quick-xml")]
+use crate::html5::quick_xml;
 #[cfg(feature = "tl")]
 use crate::html5::tl;
 
@@ -98,8 +99,8 @@ impl lol_html::Dom {
 
 #[cfg(feature = "lol_html")]
 impl<'i> TreeConstructionResult<'i, lol_html::Dom> {
-    pub fn expected(&self) -> &str {
-        &self.test.document
+    pub fn expected(&self) -> &[u8] {
+        self.test.document.as_bytes()
     }
 
     pub fn actual(&'i self) -> String {
@@ -107,10 +108,28 @@ impl<'i> TreeConstructionResult<'i, lol_html::Dom> {
     }
 }
 
+#[cfg(feature = "quick-xml")]
+impl quick_xml::Dom<'_> {
+    fn serialize(&mut self) -> String {
+        self.outer_html()
+    }
+}
+
+#[cfg(feature = "quick-xml")]
+impl<'i> TreeConstructionResult<'i, quick_xml::Dom<'i>> {
+    pub fn expected(&mut self) -> String {
+        self.test.document.to_owned()
+    }
+
+    pub fn actual(&'i mut self) -> String {
+        self.dom.serialize()
+    }
+}
+
 impl Test {
     pub fn parse<'i, T>(&'i self) -> Result<TreeConstructionResult<'i, T>>
     where
-        T: Document<'i, T> + Debug,
+        T: Document<'i, T>,
     {
         Ok(TreeConstructionResult {
             dom: T::parse(&self.data)?,
