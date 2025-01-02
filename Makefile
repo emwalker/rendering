@@ -1,6 +1,6 @@
 check:
-	cargo clippy --all-features -- -D warnings
 	cargo test --all-features
+	cargo clippy --all-features -- -D warnings
 
 fix:
 	cargo fmt

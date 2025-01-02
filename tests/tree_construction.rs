@@ -22,7 +22,6 @@ macro_rules! parses {
     };
 }
 
-#[allow(unused_macros)]
 macro_rules! passes {
     ($type:ty, $func:ident, [$($filename:expr),*]) => {
         $(
@@ -34,8 +33,9 @@ macro_rules! passes {
             for test in tests.iter() {
                 println!("running {}", test.data);
 
-                let result = test.parse::<$type>().unwrap();
-                assert_eq!(result.actual(), result.expected());
+                let mut result = test.parse::<$type>().unwrap();
+                let (actual, expected) = result.run();
+                assert_eq!(actual, expected);
             }
         }
     };
@@ -291,4 +291,10 @@ parses!(
         "webkit01.dat",
         "webkit02.dat"
     ]
+);
+
+passes!(
+    html5ever::Dom,
+    test_html5ever_dom_passes_test,
+    ["tests22.dat", "tests23.dat"]
 );

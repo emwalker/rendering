@@ -15,13 +15,13 @@ use nom::{
 use std::{fs, path::PathBuf};
 
 #[cfg(feature = "html5ever")]
-use crate::html5::html5ever;
+mod html5ever;
 #[cfg(feature = "lol_html")]
-use crate::html5::lol_html;
+mod lol_html;
 #[cfg(feature = "quick-xml")]
-use crate::html5::quick_xml;
+mod quick_xml;
 #[cfg(feature = "tl")]
-use crate::html5::tl;
+mod tl;
 
 #[derive(Debug, PartialEq)]
 pub struct Position {
@@ -57,6 +57,10 @@ pub enum ScriptMode {
     Both,
 }
 
+pub trait TestSerialization {
+    fn serialize(&mut self) -> String;
+}
+
 #[derive(Debug)]
 pub struct Test {
     pub data: String,
@@ -67,75 +71,11 @@ pub struct Test {
     pub document: String,
 }
 
-pub struct TreeConstructionResult<'i, T> {
-    #[allow(dead_code)]
-    dom: T,
-    #[allow(dead_code)]
-    test: &'i Test,
-}
-
-#[cfg(feature = "tl")]
-impl<'i> tl::Dom<'i> {
-    fn serialize(&'i self) -> String {
-        self.0.outer_html()
-    }
-}
-
-#[cfg(feature = "tl")]
-impl<'i> TreeConstructionResult<'i, tl::Dom<'i>> {
-    pub fn expected(&self) -> &str {
-        &self.test.document
-    }
-
-    pub fn actual(&'i self) -> String {
-        self.dom.serialize()
-    }
-}
-
-#[cfg(feature = "lol_html")]
-impl lol_html::Dom {
-    fn serialize(&self) -> String {
-        String::from_utf8(self.as_bytes().clone()).expect("failed to convert to UTF8")
-    }
-}
-
-#[cfg(feature = "lol_html")]
-impl<'i> TreeConstructionResult<'i, lol_html::Dom> {
-    pub fn expected(&self) -> &[u8] {
-        self.test.document.as_bytes()
-    }
-
-    pub fn actual(&'i self) -> String {
-        self.dom.serialize()
-    }
-}
-
-#[cfg(feature = "quick-xml")]
-impl quick_xml::Dom<'_> {
-    fn serialize(&mut self) -> String {
-        self.outer_html()
-    }
-}
-
-#[cfg(feature = "quick-xml")]
-impl<'i> TreeConstructionResult<'i, quick_xml::Dom<'i>> {
-    pub fn expected(&mut self) -> String {
-        self.test.document.to_owned()
-    }
-
-    pub fn actual(&'i mut self) -> String {
-        self.dom.serialize()
-    }
-}
-
-#[cfg(feature = "html5ever")]
-impl<'i> TreeConstructionResult<'i, html5ever::Dom> {
-    pub fn expected(&self) -> String {
-        self.test.document.to_owned()
-    }
-
-    pub fn actual(&'i self) -> String {
-        self.dom.serialize()
+impl<'i, S: TestSerialization> TreeConstructionResult<'i, S> {
+    pub fn run(&'i mut self) -> (String, String) {
+        let actual = self.dom.serialize();
+        let expected = self.test.document.to_owned();
+        (actual, expected)
     }
 }
 
@@ -149,6 +89,13 @@ impl Test {
             test: self,
         })
     }
+}
+
+pub struct TreeConstructionResult<'i, T> {
+    #[allow(dead_code)]
+    dom: T,
+    #[allow(dead_code)]
+    test: &'i Test,
 }
 
 pub struct Tests {
