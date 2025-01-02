@@ -1,5 +1,7 @@
 use crate::types::Result;
 
+#[cfg(feature = "html5ever")]
+pub mod html5ever;
 #[cfg(feature = "lol_html")]
 pub mod lol_html;
 #[cfg(feature = "quick-xml")]

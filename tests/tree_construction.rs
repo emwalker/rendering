@@ -1,6 +1,8 @@
 use rendering::testing::tree_construction::{fixture_from_filename, fixtures};
 use test_case::test_case;
 
+#[cfg(feature = "html5ever")]
+use rendering::html5::html5ever;
 #[cfg(feature = "lol_html")]
 use rendering::html5::lol_html;
 #[cfg(feature = "quick-xml")]
@@ -30,6 +32,10 @@ fn test(filename: &str) {
 
         #[cfg(feature = "lol_html")]
         let _ = test.parse::<lol_html::Dom>().expect("failed to parse");
+        // assert_eq!(result.expected(), result.actual());
+
+        #[cfg(feature = "html5ever")]
+        let _ = test.parse::<html5ever::Dom>().expect("failed to parse");
         // assert_eq!(result.expected(), result.actual());
     }
 }

@@ -14,6 +14,8 @@ use nom::{
 };
 use std::{fs, path::PathBuf};
 
+#[cfg(feature = "html5ever")]
+use crate::html5::html5ever;
 #[cfg(feature = "lol_html")]
 use crate::html5::lol_html;
 #[cfg(feature = "quick-xml")]
@@ -122,6 +124,17 @@ impl<'i> TreeConstructionResult<'i, quick_xml::Dom<'i>> {
     }
 
     pub fn actual(&'i mut self) -> String {
+        self.dom.serialize()
+    }
+}
+
+#[cfg(feature = "html5ever")]
+impl<'i> TreeConstructionResult<'i, html5ever::Dom> {
+    pub fn expected(&self) -> String {
+        self.test.document.to_owned()
+    }
+
+    pub fn actual(&'i self) -> String {
         self.dom.serialize()
     }
 }

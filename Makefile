@@ -3,6 +3,7 @@ check:
 	cargo test --features lol_html
 	cargo test --features tl
 	cargo test --features quick-xml
+	cargo test --features html5ever
 
 fix:
 	cargo fmt
