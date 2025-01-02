@@ -1,41 +1,294 @@
-use rendering::testing::tree_construction::{fixture_from_filename, fixtures};
+use rendering::html5::html5ever;
+use rendering::html5::lol_html;
+use rendering::html5::quick_xml;
+use rendering::html5::tl;
+use rendering::testing::tree_construction::fixture_from_filename;
 use test_case::test_case;
 
-#[cfg(feature = "html5ever")]
-use rendering::html5::html5ever;
-#[cfg(feature = "lol_html")]
-use rendering::html5::lol_html;
-#[cfg(feature = "quick-xml")]
-use rendering::html5::quick_xml;
-#[cfg(feature = "tl")]
-use rendering::html5::tl;
+macro_rules! parses {
+    ($type:ty, $func:ident, [$($filename:expr),*]) => {
+        $(
+            #[test_case($filename)]
+        )*
+        fn $func(filename: &str) {
+            let tests = fixture_from_filename(filename).expect("error loading fixture");
 
-#[test]
-fn parsing_of_fixtures() {
-    let _ = fixtures().expect("failed to load fixtures");
+            for test in tests.iter() {
+                println!("running {}", test.data);
+
+                let _ = test.parse::<$type>().unwrap();
+            }
+        }
+    };
 }
 
-#[test_case("tests1.dat")]
-fn test(filename: &str) {
-    let tests = fixture_from_filename(filename).expect("error loading fixture");
+#[allow(unused_macros)]
+macro_rules! passes {
+    ($type:ty, $func:ident, [$($filename:expr),*]) => {
+        $(
+            #[test_case($filename)]
+        )*
+        fn $func(filename: &str) {
+            let tests = fixture_from_filename(filename).expect("error loading fixture");
 
-    for test in tests.iter() {
-        println!("running {}", test.data);
+            for test in tests.iter() {
+                println!("running {}", test.data);
 
-        #[cfg(feature = "tl")]
-        let _ = test.parse::<tl::Dom>().expect("failed to parse");
-        // assert_eq!(result.expected(), result.actual());
-
-        #[cfg(feature = "quick-xml")]
-        let _ = test.parse::<quick_xml::Dom>().expect("failed to parse");
-        // assert_eq!(result.expected(), result.actual());
-
-        #[cfg(feature = "lol_html")]
-        let _ = test.parse::<lol_html::Dom>().expect("failed to parse");
-        // assert_eq!(result.expected(), result.actual());
-
-        #[cfg(feature = "html5ever")]
-        let _ = test.parse::<html5ever::Dom>().expect("failed to parse");
-        // assert_eq!(result.expected(), result.actual());
-    }
+                let result = test.parse::<$type>().unwrap();
+                assert_eq!(result.actual(), result.expected());
+            }
+        }
+    };
 }
+
+parses!(
+    tl::Dom,
+    test_tl_dom_parses_fragments,
+    [
+        "adoption01.dat",
+        "adoption02.dat",
+        "blocks.dat",
+        "comments01.dat",
+        "doctype01.dat",
+        "domjs-unsafe.dat",
+        "entities01.dat",
+        "entities02.dat",
+        "foreign-fragment.dat",
+        "html5test-com.dat",
+        "inbody01.dat",
+        "isindex.dat",
+        "main-element.dat",
+        "math.dat",
+        "menuitem-element.dat",
+        "namespace-sensitivity.dat",
+        "noscript01.dat",
+        "pending-spec-changes.dat",
+        "pending-spec-changes-plain-text-unsafe.dat",
+        "plain-text-unsafe.dat",
+        "quirks01.dat",
+        "ruby.dat",
+        "scriptdata01.dat",
+        "search-element.dat",
+        "svg.dat",
+        "tables01.dat",
+        "template.dat",
+        "tests10.dat",
+        "tests11.dat",
+        "tests12.dat",
+        "tests14.dat",
+        "tests15.dat",
+        "tests16.dat",
+        "tests17.dat",
+        "tests18.dat",
+        "tests19.dat",
+        "tests1.dat",
+        "tests20.dat",
+        "tests21.dat",
+        "tests22.dat",
+        "tests23.dat",
+        "tests24.dat",
+        "tests25.dat",
+        "tests26.dat",
+        "tests2.dat",
+        "tests3.dat",
+        "tests4.dat",
+        "tests5.dat",
+        "tests6.dat",
+        "tests7.dat",
+        "tests8.dat",
+        "tests9.dat",
+        "tests_innerHTML_1.dat",
+        "tricky01.dat",
+        "webkit01.dat",
+        "webkit02.dat"
+    ]
+);
+
+parses!(
+    lol_html::Dom,
+    test_lol_html_dom_parses_fragments,
+    [
+        "adoption01.dat",
+        "adoption02.dat",
+        "blocks.dat",
+        "comments01.dat",
+        "doctype01.dat",
+        "domjs-unsafe.dat",
+        "entities01.dat",
+        "entities02.dat",
+        "foreign-fragment.dat",
+        "html5test-com.dat",
+        "inbody01.dat",
+        "isindex.dat",
+        "main-element.dat",
+        "math.dat",
+        "menuitem-element.dat",
+        "namespace-sensitivity.dat",
+        "noscript01.dat",
+        "pending-spec-changes.dat",
+        "pending-spec-changes-plain-text-unsafe.dat",
+        "plain-text-unsafe.dat",
+        "quirks01.dat",
+        "ruby.dat",
+        "scriptdata01.dat",
+        "search-element.dat",
+        "svg.dat",
+        "tables01.dat",
+        "template.dat",
+        "tests10.dat",
+        "tests11.dat",
+        "tests12.dat",
+        "tests14.dat",
+        "tests15.dat",
+        "tests16.dat",
+        "tests17.dat",
+        // "tests18.dat",
+        "tests19.dat",
+        "tests1.dat",
+        "tests20.dat",
+        "tests21.dat",
+        "tests22.dat",
+        "tests23.dat",
+        "tests24.dat",
+        "tests25.dat",
+        "tests26.dat",
+        "tests2.dat",
+        "tests3.dat",
+        "tests4.dat",
+        "tests5.dat",
+        "tests6.dat",
+        "tests7.dat",
+        "tests8.dat",
+        "tests9.dat",
+        "tests_innerHTML_1.dat",
+        "tricky01.dat",
+        "webkit01.dat",
+        "webkit02.dat"
+    ]
+);
+
+parses!(
+    quick_xml::Dom,
+    test_quick_xml_dom_parses_fragments,
+    [
+        "adoption01.dat",
+        "adoption02.dat",
+        "blocks.dat",
+        "comments01.dat",
+        "doctype01.dat",
+        "domjs-unsafe.dat",
+        "entities01.dat",
+        "entities02.dat",
+        "foreign-fragment.dat",
+        "html5test-com.dat",
+        "inbody01.dat",
+        "isindex.dat",
+        "main-element.dat",
+        "math.dat",
+        "menuitem-element.dat",
+        "namespace-sensitivity.dat",
+        "noscript01.dat",
+        "pending-spec-changes.dat",
+        "pending-spec-changes-plain-text-unsafe.dat",
+        "plain-text-unsafe.dat",
+        "quirks01.dat",
+        "ruby.dat",
+        "scriptdata01.dat",
+        "search-element.dat",
+        "svg.dat",
+        "tables01.dat",
+        "template.dat",
+        "tests10.dat",
+        "tests11.dat",
+        "tests12.dat",
+        "tests14.dat",
+        "tests15.dat",
+        "tests16.dat",
+        "tests17.dat",
+        "tests18.dat",
+        "tests19.dat",
+        "tests1.dat",
+        "tests20.dat",
+        "tests21.dat",
+        "tests22.dat",
+        "tests23.dat",
+        "tests24.dat",
+        "tests25.dat",
+        "tests26.dat",
+        "tests2.dat",
+        "tests3.dat",
+        "tests4.dat",
+        "tests5.dat",
+        "tests6.dat",
+        "tests7.dat",
+        "tests8.dat",
+        "tests9.dat",
+        "tests_innerHTML_1.dat",
+        "tricky01.dat",
+        "webkit01.dat",
+        "webkit02.dat"
+    ]
+);
+
+parses!(
+    html5ever::Dom,
+    test_html5ever_dom_parses_fragments,
+    [
+        "adoption01.dat",
+        "adoption02.dat",
+        "blocks.dat",
+        "comments01.dat",
+        "doctype01.dat",
+        "domjs-unsafe.dat",
+        "entities01.dat",
+        "entities02.dat",
+        "foreign-fragment.dat",
+        "html5test-com.dat",
+        "inbody01.dat",
+        "isindex.dat",
+        "main-element.dat",
+        "math.dat",
+        "menuitem-element.dat",
+        "namespace-sensitivity.dat",
+        "noscript01.dat",
+        "pending-spec-changes.dat",
+        "pending-spec-changes-plain-text-unsafe.dat",
+        "plain-text-unsafe.dat",
+        "quirks01.dat",
+        "ruby.dat",
+        "scriptdata01.dat",
+        "search-element.dat",
+        "svg.dat",
+        "tables01.dat",
+        "template.dat",
+        "tests10.dat",
+        "tests11.dat",
+        "tests12.dat",
+        "tests14.dat",
+        "tests15.dat",
+        "tests16.dat",
+        "tests17.dat",
+        "tests18.dat",
+        "tests19.dat",
+        "tests1.dat",
+        "tests20.dat",
+        "tests21.dat",
+        "tests22.dat",
+        "tests23.dat",
+        "tests24.dat",
+        "tests25.dat",
+        "tests26.dat",
+        "tests2.dat",
+        "tests3.dat",
+        "tests4.dat",
+        "tests5.dat",
+        "tests6.dat",
+        "tests7.dat",
+        "tests8.dat",
+        "tests9.dat",
+        "tests_innerHTML_1.dat",
+        "tricky01.dat",
+        "webkit01.dat",
+        "webkit02.dat"
+    ]
+);
