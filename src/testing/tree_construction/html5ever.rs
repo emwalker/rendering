@@ -104,9 +104,10 @@ impl TestSerialization for Dom {
     fn serialize(&mut self) -> String {
         let document: Handle = self.0.document.clone();
         let children = document.children.borrow();
-        let node = children.as_slice().first().unwrap();
         let mut buf = String::new();
-        serialize(&mut buf, 1, node.clone());
+        for node in children.iter() {
+            serialize(&mut buf, 1, node.clone());
+        }
         buf
     }
 }
