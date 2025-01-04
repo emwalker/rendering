@@ -10,7 +10,7 @@ use std::io::Cursor;
 pub struct Dom<'i>(pub(crate) Reader<&'i [u8]>);
 
 impl<'i> Document<'i, Dom<'i>> for Dom<'i> {
-    fn parse_document(input: &str) -> Result<Dom<'_>> {
+    fn parse_document(input: &str, _parsing_enabled: bool) -> Result<Dom<'_>> {
         let mut reader = Reader::from_str(input);
         reader.config_mut().trim_text(true);
         Ok(Dom(reader))

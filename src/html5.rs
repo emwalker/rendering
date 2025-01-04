@@ -10,9 +10,10 @@ pub mod quick_xml;
 pub mod tl;
 
 pub trait Document<'i, T> {
-    fn parse_document(data: &'i str) -> Result<T>;
+    fn parse_document(data: &'i str, scripting_enabled: bool) -> Result<T>;
 
-    fn parse_fragment(data: &'i str, _context: &'i str, _scripting_enabled: bool) -> Result<T> {
-        Self::parse_document(data)
+    #[allow(unused_variables)]
+    fn parse_fragment(data: &'i str, scripting_enabled: bool, context: &'i str) -> Result<T> {
+        Self::parse_document(data, scripting_enabled)
     }
 }

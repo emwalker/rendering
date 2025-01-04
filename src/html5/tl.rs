@@ -12,7 +12,7 @@ impl Dom<'_> {
 }
 
 impl<'i> Document<'i, Dom<'i>> for Dom<'i> {
-    fn parse_document(input: &'i str) -> Result<Dom<'i>> {
+    fn parse_document(input: &'i str, _parsing_enabled: bool) -> Result<Dom<'i>> {
         let dom = tl::parse(input, ParserOptions::default())?;
         Ok(Dom(dom))
     }

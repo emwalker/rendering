@@ -94,12 +94,18 @@ fn serialize(buf: &mut String, indent: usize, handle: Handle) {
 
 impl TestSerialization for Dom {
     fn serialize(&mut self) -> String {
-        let document: Handle = self.0.document.clone();
-        let children = document.children.borrow();
         let mut buf = String::new();
-        for node in children.iter() {
+
+        let root = if self.fragment {
+            &self.dom.document.children.borrow()[0]
+        } else {
+            &self.dom.document
+        };
+
+        for node in root.children.borrow().iter() {
             serialize(&mut buf, 1, node.clone());
         }
+
         buf.trim_end_matches("\n").into()
     }
 }
