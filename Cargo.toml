@@ -6,7 +6,7 @@ rust-version = "1.80.0"
 resolver = "2"
 
 [features]
-parsers = ["html5ever", "tl", "quick-xml", "lol_html"]
+parsers = ["html5ever", "quick-xml", "lol_html"]
 html5ever = ["dep:html5ever", "markup5ever_rcdom"]
 
 [[bin]]
@@ -28,8 +28,7 @@ regex = "1.11.1"
 serde = { version = "1.0.189", features = ["derive"] }
 serde_json = "1.0.107"
 thiserror = "1.0.50"
-tl = { version = "0.7.8", features = ["simd"], optional = true }
 
 [dev-dependencies]
 test-case = "3.2.1"
-rendering = { path = ".", features = ["tl", "lol_html", "quick-xml", "html5ever"] }
+rendering = { path = ".", features = ["lol_html", "quick-xml", "html5ever"] }

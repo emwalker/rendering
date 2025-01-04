@@ -18,10 +18,6 @@ pub enum Error {
 
     #[error("tree construction: {0}")]
     TreeConstruction(String),
-
-    #[cfg(feature = "tl")]
-    #[error("tl parse error: {0}")]
-    TlParseError(#[from] tl::ParseError),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

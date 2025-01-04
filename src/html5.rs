@@ -6,8 +6,6 @@ pub mod html5ever;
 pub mod lol_html;
 #[cfg(feature = "quick-xml")]
 pub mod quick_xml;
-#[cfg(feature = "tl")]
-pub mod tl;
 
 pub trait Document<'i, T> {
     fn parse_document(data: &'i str, scripting_enabled: bool) -> Result<T>;

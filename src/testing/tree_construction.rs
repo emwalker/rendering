@@ -13,8 +13,6 @@ mod lol_html;
 mod parser;
 #[cfg(feature = "quick-xml")]
 mod quick_xml;
-#[cfg(feature = "tl")]
-mod tl;
 
 pub use parser::fixture_from_filename;
 
