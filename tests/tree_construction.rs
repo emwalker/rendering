@@ -16,7 +16,7 @@ macro_rules! parses {
             for test in tests.iter() {
                 println!("running {}", test.data);
 
-                let _ = test.parse::<$type>().unwrap();
+                let _ = test.parse::<$type>(false).unwrap();
             }
         }
     };
@@ -33,9 +33,12 @@ macro_rules! passes {
             for test in tests.iter() {
                 println!("running {}", test.data);
 
-                let mut result = test.parse::<$type>().unwrap();
-                let (actual, expected) = result.run();
-                assert_eq!(actual, expected);
+                let results = test.results::<$type>().unwrap();
+
+                for mut result in results {
+                    let (actual, expected) = result.run();
+                    assert_eq!(actual, expected);
+                }
             }
         }
     };

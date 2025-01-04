@@ -12,7 +12,7 @@ impl Dom {
 }
 
 impl<'i> Document<'i, Dom> for Dom {
-    fn parse(input: &'i str) -> Result<Dom> {
+    fn parse_document(input: &'i str) -> Result<Dom> {
         let mut output = vec![];
         let mut rewriter =
             HtmlRewriter::new(Settings::new(), |c: &[u8]| output.extend_from_slice(c));

@@ -80,14 +80,35 @@ impl<'i, S: TestSerialization> TreeConstructionResult<'i, S> {
 }
 
 impl Test {
-    pub fn parse<'i, T>(&'i self) -> Result<TreeConstructionResult<'i, T>>
+    pub fn results<'i, T>(&'i self) -> Result<Vec<TreeConstructionResult<'i, T>>>
     where
         T: Document<'i, T>,
     {
-        Ok(TreeConstructionResult {
-            dom: T::parse(&self.data)?,
-            test: self,
-        })
+        let mut results = vec![];
+
+        match self.script_mode {
+            ScriptMode::ScriptOn => results.push(self.parse(true)?),
+            ScriptMode::ScriptOff => results.push(self.parse(false)?),
+            ScriptMode::Both => {
+                results.push(self.parse(true)?);
+                results.push(self.parse(false)?);
+            }
+        }
+
+        Ok(results)
+    }
+
+    pub fn parse<'i, T>(&'i self, scripting_enabled: bool) -> Result<TreeConstructionResult<'i, T>>
+    where
+        T: Document<'i, T>,
+    {
+        let dom = if let Some(ref context) = self.document_fragment {
+            T::parse_fragment(&self.data, context, scripting_enabled)?
+        } else {
+            T::parse_document(&self.data)?
+        };
+
+        Ok(TreeConstructionResult { dom, test: self })
     }
 }
 
