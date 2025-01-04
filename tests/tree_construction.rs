@@ -299,6 +299,7 @@ passes!(
     [
         "adoption02.dat",
         "blocks.dat",
+        "comments01.dat",
         "doctype01.dat",
         "domjs-unsafe.dat",
         "entities01.dat",
@@ -317,17 +318,23 @@ passes!(
         "scriptdata01.dat",
         "search-element.dat",
         "tables01.dat",
-        "tests9.dat",
         "tests10.dat",
         "tests11.dat",
         "tests12.dat",
         "tests14.dat",
+        "tests15.dat",
         "tests17.dat",
+        "tests19.dat",
+        "tests1.dat",
         "tests20.dat",
         "tests21.dat",
         "tests22.dat",
         "tests23.dat",
         "tests24.dat",
-        "tests25.dat"
+        "tests25.dat",
+        "tests2.dat",
+        "tests3.dat",
+        "tests8.dat",
+        "tests9.dat"
     ]
 );
