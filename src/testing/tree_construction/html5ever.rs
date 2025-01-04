@@ -1,11 +1,11 @@
 use super::TestSerialization;
 use crate::html5::html5ever::Dom;
 use html5ever::{namespace_url, ns};
-use markup5ever_rcdom::{Handle, NodeData};
+use markup5ever_rcdom::{Handle, NodeData, RcDom};
 use std::iter;
 
 // Adapted from https://github.com/servo/html5ever/blob/8415d500150d3232036bd2fb9681e7820fd7ecea/rcdom/tests/html-tree-builder.rs#L77
-fn serialize(buf: &mut String, indent: usize, handle: Handle) {
+pub(crate) fn serialize(buf: &mut String, indent: usize, handle: Handle) {
     buf.push('|');
     buf.extend(iter::repeat(" ").take(indent));
 
@@ -92,20 +92,24 @@ fn serialize(buf: &mut String, indent: usize, handle: Handle) {
     }
 }
 
+pub(crate) fn serialize_dom(dom: &RcDom, fragment: bool) -> String {
+    let mut buf = String::new();
+
+    let root = if fragment {
+        &dom.document.children.borrow()[0]
+    } else {
+        &dom.document
+    };
+
+    for node in root.children.borrow().iter() {
+        serialize(&mut buf, 1, node.clone());
+    }
+
+    buf.trim_end_matches("\n").into()
+}
+
 impl TestSerialization for Dom {
     fn serialize(&mut self) -> String {
-        let mut buf = String::new();
-
-        let root = if self.fragment {
-            &self.dom.document.children.borrow()[0]
-        } else {
-            &self.dom.document
-        };
-
-        for node in root.children.borrow().iter() {
-            serialize(&mut buf, 1, node.clone());
-        }
-
-        buf.trim_end_matches("\n").into()
+        serialize_dom(&self.dom, self.fragment)
     }
 }

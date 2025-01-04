@@ -107,6 +107,12 @@ parses!(
 );
 
 passes!(
+    quick_xml::Dom,
+    test_quick_xml_dom_passes_tests,
+    ["tests22.dat"]
+);
+
+passes!(
     html5ever::Dom,
     test_html5ever_dom_passes_test,
     [

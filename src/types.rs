@@ -14,6 +14,9 @@ pub enum Error {
 
     #[error("tree construction: {0}")]
     TreeConstruction(String),
+
+    #[error("utf8 error: {0}")]
+    Utf8Error(#[from] std::str::Utf8Error),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
