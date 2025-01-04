@@ -3,6 +3,9 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum Error {
+    #[error("unknown error: {0}")]
+    General(String),
+
     #[error("io: {0}")]
     IO(#[from] std::io::Error),
 

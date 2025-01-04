@@ -1,8 +1,10 @@
 // See https://github.com/html5lib/html5lib-tests/tree/master/tree-construction
 use crate::html5::Document;
-use crate::types::Result;
-use nom::lib::std::fmt::Debug;
+use crate::types::{Error, Result};
+use regex::Regex;
 use std::path::PathBuf;
+use std::str::FromStr;
+use std::sync::LazyLock;
 
 #[cfg(feature = "html5ever")]
 mod html5ever;
@@ -43,7 +45,70 @@ pub enum ParseError {
     },
 }
 
-#[derive(Debug)]
+impl FromStr for ParseError {
+    type Err = Error;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        static LINE_COL1: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"^*?\s*\((\d+)(?:,|:)\s*(\d+)\):? (.+)$").unwrap());
+        static LINE_COL2: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"^Line:? (\d+) Col:? (\d+) (.+)$").unwrap());
+        static LINE_COL3: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"^(\d+):(\d+): (.+)$").unwrap());
+        static LINE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^(\d+): (.+)$").unwrap());
+
+        if let Some(caps) = LINE_COL1.captures(s) {
+            let (_, [line, col, message]) = caps.extract();
+            let pos = Position {
+                line: line.parse::<usize>().unwrap(),
+                col: col.parse::<usize>().unwrap(),
+            };
+
+            return Ok(Self::Location {
+                pos,
+                message: message.to_owned(),
+            });
+        }
+
+        if let Some(caps) = LINE_COL2.captures(s) {
+            let (_, [line, col, message]) = caps.extract();
+            let pos = Position {
+                line: line.parse::<usize>().unwrap(),
+                col: col.parse::<usize>().unwrap(),
+            };
+
+            return Ok(Self::Location {
+                pos,
+                message: message.to_owned(),
+            });
+        }
+
+        if let Some(caps) = LINE_COL3.captures(s) {
+            let (_, [line, col, message]) = caps.extract();
+            let pos = Position {
+                line: line.parse::<usize>().unwrap(),
+                col: col.parse::<usize>().unwrap(),
+            };
+
+            return Ok(Self::Location {
+                pos,
+                message: message.to_owned(),
+            });
+        }
+
+        if let Some(caps) = LINE.captures(s) {
+            let (_, [line, message]) = caps.extract();
+            return Ok(Self::Line {
+                line: line.parse::<usize>().unwrap(),
+                message: message.to_owned(),
+            });
+        }
+
+        Ok(ParseError::Message(s.into()))
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
 pub enum ScriptMode {
     ScriptOn,
     ScriptOff,
