@@ -92,9 +92,7 @@ impl Test {
 }
 
 pub struct TreeConstructionResult<'i, T> {
-    #[allow(dead_code)]
     dom: T,
-    #[allow(dead_code)]
     test: &'i Test,
 }
 
@@ -338,12 +336,12 @@ fn test(i: &str) -> IResult<&str, Test> {
             };
 
             Test {
-                data: data.into(),
+                data: data.trim_end_matches("\n").into(),
                 errors,
                 new_errors: new_errors.unwrap_or_default(),
                 script_mode,
                 document_fragment: document_fragment.map(str::to_string),
-                document,
+                document: document.trim_end_matches("\n").into(),
             }
         },
     )(i)
@@ -453,7 +451,7 @@ Test
         )
         .unwrap();
 
-        assert_eq!(test.data, "Test\n");
+        assert_eq!(test.data, "Test");
         assert_eq!(
             test.errors,
             &[ParseError::Location {
@@ -463,7 +461,7 @@ Test
         );
         assert_eq!(
             test.document,
-            "| <html>\n|   <head>\n|   <body>\n|     \"Test\"\n"
+            "| <html>\n|   <head>\n|   <body>\n|     \"Test\""
         );
     }
 
@@ -565,7 +563,7 @@ FOO<!-- BAR --!
         )
         .unwrap();
 
-        assert!(test.document.ends_with(">BAZ -->\n"));
+        assert!(test.document.ends_with(">BAZ -->"));
     }
 
     #[test]
@@ -789,7 +787,7 @@ x"
         .unwrap();
 
         assert_eq!(test.errors.len(), 3);
-        assert!(test.document.ends_with("\"\nx\"\n"));
+        assert!(test.document.ends_with("\"\nx\""));
     }
 
     #[test]

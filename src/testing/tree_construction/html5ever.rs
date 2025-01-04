@@ -2,14 +2,16 @@ use super::TestSerialization;
 use crate::html5::html5ever::Dom;
 use html5ever::{namespace_url, ns};
 use markup5ever_rcdom::{Handle, NodeData};
+use std::iter;
 
 // Adapted from https://github.com/servo/html5ever/blob/8415d500150d3232036bd2fb9681e7820fd7ecea/rcdom/tests/html-tree-builder.rs#L77
-fn serialize(writer: &mut String, indent: usize, handle: Handle) {
-    let mut buf = String::new();
+fn serialize(buf: &mut String, indent: usize, handle: Handle) {
+    buf.push('|');
+    buf.extend(iter::repeat(" ").take(indent));
 
     let node = handle;
     match node.data {
-        NodeData::Document => {}
+        NodeData::Document => panic!("should not reach Document"),
 
         NodeData::Doctype {
             ref name,
@@ -25,13 +27,9 @@ fn serialize(writer: &mut String, indent: usize, handle: Handle) {
         }
 
         NodeData::Text { ref contents } => {
-            let text = &contents.borrow();
-            let text = text.strip_suffix("\n").unwrap_or(text);
-            if !text.is_empty() {
-                buf.push('"');
-                buf.push_str(text);
-                buf.push_str("\"\n");
-            }
+            buf.push('"');
+            buf.push_str(&contents.borrow());
+            buf.push_str("\"\n");
         }
 
         NodeData::Comment { ref contents } => {
@@ -49,7 +47,7 @@ fn serialize(writer: &mut String, indent: usize, handle: Handle) {
             match name.ns {
                 ns!(svg) => buf.push_str("svg "),
                 ns!(mathml) => buf.push_str("math "),
-                _ => {}
+                _ => (),
             }
             buf.push_str(&name.local);
             buf.push_str(">\n");
@@ -60,12 +58,12 @@ fn serialize(writer: &mut String, indent: usize, handle: Handle) {
 
             for attr in attrs.into_iter() {
                 buf.push('|');
-                buf.extend(std::iter::repeat(" ").take(indent + 2));
+                buf.extend(iter::repeat(" ").take(indent + 2));
                 match attr.name.ns {
                     ns!(xlink) => buf.push_str("xlink "),
                     ns!(xml) => buf.push_str("xml "),
                     ns!(xmlns) => buf.push_str("xmlns "),
-                    _ => {}
+                    _ => (),
                 }
                 buf.push_str(&format!("{}=\"{}\"\n", attr.name.local, attr.value));
             }
@@ -75,7 +73,7 @@ fn serialize(writer: &mut String, indent: usize, handle: Handle) {
     }
 
     for child in node.children.borrow().iter() {
-        serialize(&mut buf, indent + 2, child.clone());
+        serialize(buf, indent + 2, child.clone());
     }
 
     if let NodeData::Element {
@@ -85,18 +83,12 @@ fn serialize(writer: &mut String, indent: usize, handle: Handle) {
     {
         if let Some(ref content) = &*template_contents.borrow() {
             buf.push('|');
-            buf.extend(std::iter::repeat(" ").take(indent + 2));
+            buf.extend(iter::repeat(" ").take(indent + 2));
             buf.push_str("content\n");
             for child in content.children.borrow().iter() {
-                serialize(&mut buf, indent + 4, child.clone());
+                serialize(buf, indent + 4, child.clone());
             }
         }
-    }
-
-    if !buf.is_empty() {
-        writer.push('|');
-        writer.extend(std::iter::repeat(" ").take(indent));
-        writer.push_str(&buf);
     }
 }
 
@@ -108,6 +100,6 @@ impl TestSerialization for Dom {
         for node in children.iter() {
             serialize(&mut buf, 1, node.clone());
         }
-        buf
+        buf.trim_end_matches("\n").into()
     }
 }
