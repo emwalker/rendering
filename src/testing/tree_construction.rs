@@ -8,8 +8,6 @@ use std::sync::LazyLock;
 
 #[cfg(feature = "html5ever")]
 mod html5ever;
-#[cfg(feature = "lol_html")]
-mod lol_html;
 mod parser;
 #[cfg(feature = "quick-xml")]
 mod quick_xml;

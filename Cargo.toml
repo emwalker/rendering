@@ -6,7 +6,7 @@ rust-version = "1.80.0"
 resolver = "2"
 
 [features]
-parsers = ["html5ever", "quick-xml", "lol_html"]
+parsers = ["html5ever", "quick-xml"]
 html5ever = ["dep:html5ever", "markup5ever_rcdom"]
 
 [[bin]]
@@ -21,7 +21,6 @@ path = "tests/tree_construction.rs"
 encoding_rs = "0.8.33"
 html5ever = { version = "0.27.0", optional = true }
 itertools = "0.11.0"
-lol_html = { version = "2.1.0", optional = true }
 markup5ever_rcdom = { version = "0.3.0", optional = true }
 quick-xml = { version = "0.37.2", optional = true }
 regex = "1.11.1"
@@ -31,4 +30,4 @@ thiserror = "1.0.50"
 
 [dev-dependencies]
 test-case = "3.2.1"
-rendering = { path = ".", features = ["lol_html", "quick-xml", "html5ever"] }
+rendering = { path = ".", features = ["quick-xml", "html5ever"] }
