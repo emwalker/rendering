@@ -162,13 +162,18 @@ impl Test {
             T::parse_document(&self.data, scripting_enabled)?
         };
 
-        Ok(TreeConstructionResult { dom, test: self })
+        Ok(TreeConstructionResult {
+            dom,
+            test: self,
+            scripting_enabled,
+        })
     }
 }
 
 pub struct TreeConstructionResult<'i, T> {
     dom: T,
     test: &'i Test,
+    pub scripting_enabled: bool,
 }
 
 pub struct Tests {

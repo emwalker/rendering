@@ -32,12 +32,12 @@ macro_rules! passes {
                 let data = &test.data;
                 println!("running {}", data);
 
-                let script_mode = test.script_mode;
                 let results = test.results::<$type>().unwrap();
 
                 for mut result in results {
+                    let scripting_enabled = result.scripting_enabled;
                     let (actual, expected) = result.run();
-                    assert_eq!(actual, expected, "\ndata: {data}\nscript mode: {script_mode:?}\nactual:\n{actual}\nexpected:\n{expected}\n");
+                    assert_eq!(actual, expected, "\n  data: {data}\n  scripting enabled: {scripting_enabled}  \n  actual:\n{actual}\n  expected:\n{expected}\n");
                 }
             }
         }
@@ -122,6 +122,8 @@ passes!(
         "tests23.dat",
         "tests25.dat",
         "tests9.dat",
+        "tests10.dat",
+        "tests14.dat",
     ]
 );
 
