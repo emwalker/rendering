@@ -17,6 +17,10 @@ path = "src/bin/parse.rs"
 name = "tree_construction"
 path = "tests/tree_construction.rs"
 
+[[bench]]
+name = "tree_construction"
+harness = false
+
 [dependencies]
 encoding_rs = "0.8.33"
 html5ever = { version = "0.27.0", optional = true }
@@ -31,5 +35,6 @@ thiserror = "1.0.50"
 tracing = "0.1.41"
 
 [dev-dependencies]
-test-case = "3.2.1"
+criterion = "0.5.1"
 rendering = { path = ".", features = ["quick-xml", "html5ever"] }
+test-case = "3.2.1"
