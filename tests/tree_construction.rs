@@ -4,7 +4,7 @@ use rendering::testing::tree_construction::fixture_from_filename;
 use test_case::test_case;
 
 macro_rules! parses {
-    ($type:ty, $func:ident, [$($filename:expr),*]) => {
+    ($type:ty, $func:ident, [$($filename:expr),*,]) => {
         $(
             #[test_case($filename)]
         )*
@@ -21,7 +21,7 @@ macro_rules! parses {
 }
 
 macro_rules! passes {
-    ($type:ty, $func:ident, [$($filename:expr),*]) => {
+    ($type:ty, $func:ident, [$($filename:expr),*,]) => {
         $(
             #[test_case($filename)]
         )*
@@ -29,14 +29,15 @@ macro_rules! passes {
             let tests = fixture_from_filename(filename).expect("error loading fixture");
 
             for test in tests.iter() {
-                println!("running {}", test.data);
+                let data = &test.data;
+                println!("running {}", data);
 
                 let script_mode = test.script_mode;
                 let results = test.results::<$type>().unwrap();
 
                 for mut result in results {
                     let (actual, expected) = result.run();
-                    assert_eq!(actual, expected, "\nscript mode: {script_mode:?}\nactual:\n{actual}\nexpected:\n{expected}\n");
+                    assert_eq!(actual, expected, "\ndata: {data}\nscript mode: {script_mode:?}\nactual:\n{actual}\nexpected:\n{expected}\n");
                 }
             }
         }
@@ -102,14 +103,26 @@ parses!(
         "tests_innerHTML_1.dat",
         "tricky01.dat",
         "webkit01.dat",
-        "webkit02.dat"
+        "webkit02.dat",
     ]
 );
 
 passes!(
     quick_xml::Dom,
     test_quick_xml_dom_passes_tests,
-    ["tests22.dat"]
+    [
+        "blocks.dat",
+        "inbody01.dat",
+        "isindex.dat",
+        "main-element.dat",
+        "ruby.dat",
+        "search-element.dat",
+        "tests17.dat",
+        "tests22.dat",
+        "tests23.dat",
+        "tests25.dat",
+        "tests9.dat",
+    ]
 );
 
 passes!(
@@ -171,6 +184,6 @@ passes!(
         "tests_innerHTML_1.dat",
         "tricky01.dat",
         "webkit01.dat",
-        "webkit02.dat"
+        "webkit02.dat",
     ]
 );

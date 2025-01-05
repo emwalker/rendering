@@ -130,7 +130,8 @@ impl Document<'_, Dom> for Dom {
 
                 Ok(Event::DocType(e)) => {
                     let buf = e.as_ref();
-                    let name = str_tendril(buf)?;
+                    let mut name = str_tendril(buf)?;
+                    name.make_ascii_lowercase();
 
                     let doc_type = Doctype {
                         name: Some(name),
